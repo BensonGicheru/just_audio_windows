@@ -9,7 +9,8 @@
 #include <flutter/event_stream_handler_functions.h>
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
-#include "flutter/shell/platform/common/public/flutter_task_runner.h"
+#include <flutter/stream_handler.h> // For stream handling
+#include <flutter/platform_thread.h> // For platform thread handling
 
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
@@ -81,19 +82,19 @@ auto TO_WIDESTRING = [](std::string string) -> std::wstring {
 
 class JustAudioEventSink {
 public:
+    // Prevent copying.
     JustAudioEventSink(JustAudioEventSink const&) = delete;
     JustAudioEventSink& operator=(JustAudioEventSink const&) = delete;
 
-    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id)
-            : task_runner(flutter::TaskRunner::GetCurrent()) { // Assign task runner for current thread
+    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id) {
         auto event_channel =
                 std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance());
 
         auto event_handler = std::make_unique<flutter::StreamHandlerFunctions<>>(
-                [self = this](const EncodableValue* arguments, std::unique_ptr<flutter::EventSink<>>&& events) -> std::unique_ptr<flutter::StreamHandlerError<>> {
+                [self = this](const flutter::EncodableValue* arguments, std::unique_ptr<flutter::EventSink<>>&& events) -> std::unique_ptr<flutter::StreamHandlerError<>> {
                     self->sink = std::move(events);
                     return nullptr;
-                }, [self = this](const EncodableValue* arguments) -> std::unique_ptr<flutter::StreamHandlerError<>> {
+                }, [self = this](const flutter::EncodableValue* arguments) -> std::unique_ptr<flutter::StreamHandlerError<>> {
                     self->sink.reset();
                     return nullptr;
                 });
@@ -101,29 +102,36 @@ public:
         event_channel->SetStreamHandler(std::move(event_handler));
     }
 
-    void Success(const EncodableValue& event) {
-        if (sink && task_runner) {
-            task_runner->PostTask([self = this, event]() {
-                if (self->sink) {
-                    self->sink->Success(event);
-                }
-            });
+    void Success(const flutter::EncodableValue& event) {
+        if (sink) {
+            if (flutter::PlatformThread::GetCurrentId() == flutter::PlatformThread::GetPlatformThreadId()) {
+                sink->Success(event); // On platform thread
+            } else {
+                flutter::PlatformThread::PostTask([self = this, event]() {
+                    if (self->sink) {
+                        self->sink->Success(event);
+                    }
+                });
+            }
         }
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
-        if (sink && task_runner) {
-            task_runner->PostTask([self = this, error_code, error_message]() {
-                if (self->sink) {
-                    self->sink->Error(error_code, error_message);
-                }
-            });
+        if (sink) {
+            if (flutter::PlatformThread::GetCurrentId() == flutter::PlatformThread::GetPlatformThreadId()) {
+                sink->Error(error_code, error_message); // On platform thread
+            } else {
+                flutter::PlatformThread::PostTask([self = this, error_code, error_message]() {
+                    if (self->sink) {
+                        self->sink->Error(error_code, error_message);
+                    }
+                });
+            }
         }
     }
 
 private:
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
-    std::shared_ptr<flutter::TaskRunner> task_runner;
 };
 
 class AudioPlayer {
