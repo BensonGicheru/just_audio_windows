@@ -9,8 +9,7 @@
 #include <flutter/event_stream_handler_functions.h>
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
-#include <flutter/stream_handler.h> // For stream handling
-#include <flutter/platform_thread.h> // For platform thread handling
+#include <functional>
 
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
@@ -80,6 +79,7 @@ auto TO_WIDESTRING = [](std::string string) -> std::wstring {
 };
 
 
+
 class JustAudioEventSink {
 public:
     // Prevent copying.
@@ -104,34 +104,43 @@ public:
 
     void Success(const flutter::EncodableValue& event) {
         if (sink) {
-            if (flutter::PlatformThread::GetCurrentId() == flutter::PlatformThread::GetPlatformThreadId()) {
-                sink->Success(event); // On platform thread
-            } else {
-                flutter::PlatformThread::PostTask([self = this, event]() {
-                    if (self->sink) {
-                        self->sink->Success(event);
-                    }
-                });
-            }
+            // Post to the main thread using Windows API
+            PostMessageToMainThread([self = this, event]() {
+                if (self->sink) {
+                    self->sink->Success(event);
+                }
+            });
         }
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
         if (sink) {
-            if (flutter::PlatformThread::GetCurrentId() == flutter::PlatformThread::GetPlatformThreadId()) {
-                sink->Error(error_code, error_message); // On platform thread
-            } else {
-                flutter::PlatformThread::PostTask([self = this, error_code, error_message]() {
-                    if (self->sink) {
-                        self->sink->Error(error_code, error_message);
-                    }
-                });
-            }
+            // Post to the main thread using Windows API
+            PostMessageToMainThread([self = this, error_code, error_message]() {
+                if (self->sink) {
+                    self->sink->Error(error_code, error_message);
+                }
+            });
         }
     }
 
 private:
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
+
+    // Utility function to post a message to the main thread
+    void PostMessageToMainThread(std::function<void()> func) {
+        auto task = new std::function<void()>(std::move(func));
+        PostMessage(nullptr, WM_USER, reinterpret_cast<WPARAM>(task), 0);
+    }
+
+    // Windows message handler for running the posted function on the main thread
+    static void ProcessPostedTasks(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+        if (msg == WM_USER) {
+            auto task = reinterpret_cast<std::function<void()>*>(wparam);
+            (*task)();      // Execute the task
+            delete task;    // Delete task to free memory
+        }
+    }
 };
 
 class AudioPlayer {
