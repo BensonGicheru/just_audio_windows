@@ -195,10 +195,6 @@ public:
             broadcastState();
             std::wcout << L"[just_audio_windows]: Playback state: Buffering" << std::endl;
         }
-        else if (state == Playback::MediaPlaybackState::Ended) {
-            broadcastState();
-            std::wcout << L"[just_audio_windows]: Playback state: Ended" << std::endl;
-        }
         else if (state == Playback::MediaPlaybackState::Opening) {
             std::wcout << L"[just_audio_windows]: Playback state: Opening" << std::endl;
         }
