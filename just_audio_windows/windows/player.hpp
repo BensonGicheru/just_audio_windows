@@ -198,9 +198,6 @@ public:
             broadcastState();
             std::wcout << L"[just_audio_windows]: Playback state: Ended" << std::endl;
         }
-        else if (state == MediaPlaybackState::Opening) {
-            std::wcout << L"[just_audio_windows]: Playback state: Opening" << std::endl;
-        }
         else {
             std::wcout << L"[just_audio_windows]: Unknown playback state" << std::endl;
         }
