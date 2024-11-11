@@ -206,7 +206,7 @@ public:
 
     mediaPlayer.PlaybackSession().BufferingProgressChanged([&](const auto& session, const auto&) {
         double progress = session.BufferingProgress() * 100; // Convert to percentage
-        std::wcout << L"[just_audio_windows]: Buffering progress: " << std::fixed << std::setprecision(2) << progress << L"%" << std::endl;
+        std::wcout << L"[just_audio_windows]: Buffering progress: " << progress << std::endl;
     });
 
     // Player error event
