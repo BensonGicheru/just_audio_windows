@@ -180,21 +180,26 @@ public:
     // });
 
     mediaPlayer.PlaybackSession().PlaybackStateChanged([&](const auto& session, const auto&) {
-        auto state = static_cast<int>(session.PlaybackState()); // Explicit cast to int for switch statement
+        auto state = session.PlaybackState();
+
         switch (state) {
-            case static_cast<int>(MediaPlaybackState::Playing):
+            case MediaPlaybackState::Playing:
+                broadcastState();
                 std::wcout << L"Playback state: Playing" << std::endl;
                 break;
-            case static_cast<int>(MediaPlaybackState::Paused):
+            case MediaPlaybackState::Paused:
+                broadcastState();
                 std::wcout << L"Playback state: Paused" << std::endl;
                 break;
-            case static_cast<int>(MediaPlaybackState::Buffering):
+            case MediaPlaybackState::Buffering:
+                broadcastState();
                 std::wcout << L"Playback state: Buffering" << std::endl;
                 break;
-            case static_cast<int>(MediaPlaybackState::Ended):
+            case MediaPlaybackState::Ended:
+                broadcastState();
                 std::wcout << L"Playback state: Ended" << std::endl;
                 break;
-            case static_cast<int>(MediaPlaybackState::Opening):
+            case MediaPlaybackState::Opening:
                 std::wcout << L"Playback state: Opening" << std::endl;
                 break;
             default:
