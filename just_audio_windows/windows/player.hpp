@@ -179,6 +179,36 @@ public:
       broadcastState();
     });
 
+    mediaPlayer.PlaybackSession().PlaybackStateChanged([&](const auto& session, const auto&) {
+        auto state = session.PlaybackState();
+        switch (state) {
+            case MediaPlaybackState::Playing:
+                broadcastState();
+                std::wcout << L"[just_audio_windows] Playback state: Playing" << std::endl;
+                break;
+            case MediaPlaybackState::Paused:
+                broadcastState();
+                std::wcout << L"[just_audio_windows] Playback state: Paused" << std::endl;
+                break;
+            case MediaPlaybackState::Buffering:
+                broadcastState();
+                std::wcout << L"[just_audio_windows] Playback state: Buffering" << std::endl;
+                break;
+            case MediaPlaybackState::Ended:
+                broadcastState();
+                std::wcout << L"[just_audio_windows] Playback state: Ended" << std::endl;
+                break;
+            case MediaPlaybackState::Opening:
+                std::wcout << L"[just_audio_windows] Playback state: Opening" << std::endl;
+                break;
+        }
+    });
+
+    mediaPlayer.PlaybackSession().BufferingProgressChanged([&](const auto& session, const auto&) {
+        double progress = session.BufferingProgress() * 100; // Convert to percentage
+        std::wcout << L"[just_audio_windows]: Buffering progress: " << std::fixed << std::setprecision(2) << progress << L"%" << std::endl;
+    });
+
     // Player error event
     mediaPlayer.MediaFailed([=](auto, const Playback::MediaPlayerFailedEventArgs& args) -> void {
       std::string errorMessage = winrt::to_string(args.ErrorMessage());
@@ -561,8 +591,12 @@ public:
       bufferingProgress = 1;
     }
 
+    try {
+        eventData[flutter::EncodableValue("updatePosition")] = flutter::EncodableValue(TO_MICROSECONDS(session.Position())); //int
+    } catch(...) {
+        std::cerr << "[just_audio_windows]: Position access: Error accessing session.Position()." << std::endl;
+    }
     eventData[flutter::EncodableValue("processingState")] = flutter::EncodableValue(processingState(session.PlaybackState()));
-    eventData[flutter::EncodableValue("updatePosition")] = flutter::EncodableValue(TO_MICROSECONDS(session.Position())); //int
     eventData[flutter::EncodableValue("updateTime")] = flutter::EncodableValue(TO_MILLISECONDS(now.time_since_epoch())); //int
     eventData[flutter::EncodableValue("bufferedPosition")] = flutter::EncodableValue((int64_t)(duration * bufferingProgress)); //int
     eventData[flutter::EncodableValue("duration")] = flutter::EncodableValue(duration); //int
