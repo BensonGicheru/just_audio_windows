@@ -183,23 +183,23 @@ public:
         auto session = mediaPlayer.PlaybackSession();
         auto state = session.PlaybackState();
 
-        if (state == MediaPlaybackState::Playing) {
+        if (state == Playback::MediaPlaybackState::Playing) {
             broadcastState();
             std::wcout << L"[just_audio_windows]: Playback state: Playing" << std::endl;
         }
-        else if (state == MediaPlaybackState::Paused) {
+        else if (state == Playback::MediaPlaybackState::Paused) {
             broadcastState();
             std::wcout << L"[just_audio_windows]: Playback state: Paused" << std::endl;
         }
-        else if (state == MediaPlaybackState::Buffering) {
+        else if (state == Playback::MediaPlaybackState::Buffering) {
             broadcastState();
             std::wcout << L"[just_audio_windows]: Playback state: Buffering" << std::endl;
         }
-        else if (state == MediaPlaybackState::Ended) {
+        else if (state == Playback::MediaPlaybackState::Ended) {
             broadcastState();
             std::wcout << L"[just_audio_windows]: Playback state: Ended" << std::endl;
         }
-        else if (state == MediaPlaybackState::Opening) {
+        else if (state == Playback::MediaPlaybackState::Opening) {
             std::wcout << L"[just_audio_windows]: Playback state: Opening" << std::endl;
         }
         else {
