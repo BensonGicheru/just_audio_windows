@@ -103,28 +103,14 @@ public:
     }
 
     void Success(const flutter::EncodableValue& event) {
-        std::wcout << L"[just_audio_windows]: called success" << std::endl;
         if (sink) {
-            std::wcout << L"[just_audio_windows]: sink=true" << std::endl;
             sink->Success(event);
-            // Post to the main thread using Windows API
-//            PostMessageToMainThread([self = this, event]() {
-//                if (self->sink) {
-//                    self->sink->Success(event);
-//                    std::wcout << L"[just_audio_windows]: sink success" << std::endl;
-//                }
-//            });
         }
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
         if (sink) {
-            // Post to the main thread using Windows API
-            PostMessageToMainThread([self = this, error_code, error_message]() {
-                if (self->sink) {
-                    self->sink->Error(error_code, error_message);
-                }
-            });
+            sink->Error(error_code, error_message);
         }
     }
 
