@@ -609,6 +609,10 @@ public:
       eventData[flutter::EncodableValue("currentIndex")] = flutter::EncodableValue(0); //int
     }
 
+    std::wcout << L"[just_audio_windows]: mediaPlaybackList.Items().Size() > 0: " << (mediaPlaybackList.Items().Size() > 0) << std::endl;
+
+    std::wcout << L"[just_audio_windows]: Data sink" << std::endl;
+
     event_sink_->Success(eventData);
   }
 
