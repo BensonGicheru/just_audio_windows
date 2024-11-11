@@ -182,29 +182,27 @@ public:
     mediaPlayer.PlaybackSession().PlaybackStateChanged([&](const auto& session, const auto&) {
         auto state = session.PlaybackState();
 
-        switch (state) {
-            case MediaPlaybackState::Playing:
-                broadcastState();
-                std::wcout << L"Playback state: Playing" << std::endl;
-                break;
-            case MediaPlaybackState::Paused:
-                broadcastState();
-                std::wcout << L"Playback state: Paused" << std::endl;
-                break;
-            case MediaPlaybackState::Buffering:
-                broadcastState();
-                std::wcout << L"Playback state: Buffering" << std::endl;
-                break;
-            case MediaPlaybackState::Ended:
-                broadcastState();
-                std::wcout << L"Playback state: Ended" << std::endl;
-                break;
-            case MediaPlaybackState::Opening:
-                std::wcout << L"Playback state: Opening" << std::endl;
-                break;
-            default:
-                std::wcout << L"Unknown playback state" << std::endl;
-                break;
+        if (state == MediaPlaybackState::Playing) {
+            broadcastState();
+            std::wcout << L"[just_audio_windows]: Playback state: Playing" << std::endl;
+        }
+        else if (state == MediaPlaybackState::Paused) {
+            broadcastState();
+            std::wcout << L"[just_audio_windows]: Playback state: Paused" << std::endl;
+        }
+        else if (state == MediaPlaybackState::Buffering) {
+            broadcastState();
+            std::wcout << L"[just_audio_windows]: Playback state: Buffering" << std::endl;
+        }
+        else if (state == MediaPlaybackState::Ended) {
+            broadcastState();
+            std::wcout << L"[just_audio_windows]: Playback state: Ended" << std::endl;
+        }
+        else if (state == MediaPlaybackState::Opening) {
+            std::wcout << L"[just_audio_windows]: Playback state: Opening" << std::endl;
+        }
+        else {
+            std::wcout << L"[just_audio_windows]: Unknown playback state" << std::endl;
         }
     });
 
