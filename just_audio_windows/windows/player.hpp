@@ -106,13 +106,14 @@ public:
         std::wcout << L"[just_audio_windows]: called success" << std::endl;
         if (sink) {
             std::wcout << L"[just_audio_windows]: sink=true" << std::endl;
+            self->sink->Success(event);
             // Post to the main thread using Windows API
-            PostMessageToMainThread([self = this, event]() {
-                if (self->sink) {
-                    self->sink->Success(event);
-                    std::wcout << L"[just_audio_windows]: sink success" << std::endl;
-                }
-            });
+//            PostMessageToMainThread([self = this, event]() {
+//                if (self->sink) {
+//                    self->sink->Success(event);
+//                    std::wcout << L"[just_audio_windows]: sink success" << std::endl;
+//                }
+//            });
         }
     }
 
