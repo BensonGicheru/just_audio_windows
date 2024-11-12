@@ -487,6 +487,7 @@ public:
       }
 
       mediaPlayer.Source(mediaPlaybackList.as<Playback::IMediaPlaybackSource>());
+      std::wcout << L"[just_audio_windows]: Concatenating source set" << std::endl;
     } else {
       mediaPlayer.Source(createMediaPlaybackItem(source).as<Playback::IMediaPlaybackSource>());
     }
