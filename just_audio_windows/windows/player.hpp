@@ -5,6 +5,7 @@
 // This must be included before many other Windows headers.
 #include <windows.h>
 
+#include <flutter/flutter_view.h>
 #include <flutter/event_channel.h>
 #include <flutter/event_stream_handler_functions.h>
 #include <flutter/method_channel.h>
@@ -102,9 +103,27 @@ public:
         event_channel->SetStreamHandler(std::move(event_handler));
     }
 
+//    void Success(const flutter::EncodableValue& event) {
+//        if (sink) {
+//            sink->Success(event);
+//        }
+//    }
+
     void Success(const flutter::EncodableValue& event) {
         if (sink) {
-            sink->Success(event);
+            // Get the Flutter Windows View (usually accessible from the app context)
+            auto view = flutter::FlutterWindowsView::GetCurrent();
+            if (view) {
+                auto task_runner = view->GetPlatformTaskRunner();
+                task_runner->PostTask([self = this, event]() {
+                    if (self->sink) {
+                        self->sink->Success(event);
+                    }
+                });
+            } else {
+                // Fallback to direct call if view is not available (for other platforms)
+                sink->Success(event);
+            }
         }
     }
 
