@@ -473,7 +473,7 @@ public:
 
   void AudioPlayer::loadSource(const flutter::EncodableMap& source) const& {
     auto items = mediaPlaybackList.Items();
-    items.Clear(); // Always clear the list since we are resetting
+    mediaPlaybackList.Items().Clear(); // Always clear the list since we are resetting
 
     const std::string* type = std::get_if<std::string>(ValueOrNull(source, "type"));
 
@@ -491,6 +491,7 @@ public:
     } else {
       mediaPlayer.Source(createMediaPlaybackItem(source).as<Playback::IMediaPlaybackSource>());
     }
+    return;
   }
 
   /**
