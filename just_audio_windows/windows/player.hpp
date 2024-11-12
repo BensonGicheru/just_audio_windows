@@ -407,7 +407,7 @@ public:
         auto mediaSource = createMediaPlaybackItem(*childMap);
         auto item = Playback::MediaPlaybackItem(mediaSource);
 
-        items.InsertAt(currentIndex, item);
+        mediaPlaybackList.Items().InsertAt(currentIndex, item);
         currentIndex++;
       }
 
@@ -483,7 +483,7 @@ public:
       for (auto& child : *children) {
         const auto* childMap = std::get_if<flutter::EncodableMap>(&child);
         auto item = createMediaPlaybackItem(*childMap);
-        items.Append(item);
+        mediaPlaybackList.Items().Append(item);
       }
 
       mediaPlayer.Source(mediaPlaybackList.as<Playback::IMediaPlaybackSource>());
