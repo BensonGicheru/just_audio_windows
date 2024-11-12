@@ -186,6 +186,11 @@ public:
             std::wcout << L"[just_audio_windows]: Playback state: Buffering" << std::endl;
         }
         else if (state == Playback::MediaPlaybackState::Opening) {
+            try {
+                broadcastPlaybackEvent();
+            } catch (winrt::hresult_error const& ex) {
+                std::cerr << "[just_audio_windows] Broadcast event error: " << winrt::to_string(ex.message()) << std::endl;
+            }
             std::wcout << L"[just_audio_windows]: Playback state: Opening" << std::endl;
         }
         else {
@@ -487,7 +492,7 @@ public:
       }
 
       mediaPlayer.Source(mediaPlaybackList.as<Playback::IMediaPlaybackSource>());
-      std::wcout << L"[just_audio_windows]: Concatenating source set" << std::endl;
+      std::wcout << L"[just_audio_windows]: ConcatenatingSource set" << std::endl;
     } else {
       mediaPlayer.Source(createMediaPlaybackItem(source).as<Playback::IMediaPlaybackSource>());
     }
