@@ -115,11 +115,15 @@ public:
             auto view = flutter::FlutterWindowsView::GetCurrent();
             if (view) {
                 auto task_runner = view->GetPlatformTaskRunner();
-                task_runner->PostTask([self = this, event]() {
-                    if (self->sink) {
-                        self->sink->Success(event);
-                    }
-                });
+                std::wcout << L"[just_audio_windows]: flutter task_runner initialized" << std::endl;
+                if(task_runner) {
+                    task_runner->PostTask([self = this, event]() {
+                        if (self->sink) {
+                            std::wcout << L"[just_audio_windows]: Sink called" << std::endl;
+                            self->sink->Success(event);
+                        }
+                    });
+                }
             } else {
                 // Fallback to direct call if view is not available (for other platforms)
                 sink->Success(event);
