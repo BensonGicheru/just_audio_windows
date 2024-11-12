@@ -283,6 +283,7 @@ public:
       const auto* initialIndex = std::get_if<int>(ValueOrNull(*args, "initialIndex"));
 
       try {
+        std::wcout << L"[just_audio_windows]: Loading" << std::endl;
         loadSource(*audioSourceData);
       } catch (char* error) {
         std::cerr << "[just_audio_windows] Load error" << std::endl;
@@ -299,6 +300,7 @@ public:
         std::wcout << L"[just_audio_windows]: Load - seekToPosition" << std::endl;
       }
 
+      std::wcout << L"[just_audio_windows]: Load success" << std::endl;
       result->Success(flutter::EncodableMap());
     } else if (method_call.method_name().compare("play") == 0) {
       mediaPlayer.Play();
