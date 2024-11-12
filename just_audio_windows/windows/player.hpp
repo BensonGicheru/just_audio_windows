@@ -285,15 +285,18 @@ public:
       try {
         loadSource(*audioSourceData);
       } catch (char* error) {
+        std::cerr << "[just_audio_windows] Load error" << std::endl;
         return result->Error("load_error", error);
       }
 
       if (initialIndex != nullptr) {
         seekToItem((uint32_t)*initialIndex);
+        std::wcout << L"[just_audio_windows]: Load - seekToItem" << std::endl;
       }
 
       if (initialPosition != nullptr) {
         seekToPosition(*initialPosition);
+        std::wcout << L"[just_audio_windows]: Load - seekToPosition" << std::endl;
       }
 
       result->Success(flutter::EncodableMap());
