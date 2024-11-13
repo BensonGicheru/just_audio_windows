@@ -86,15 +86,40 @@ public:
     JustAudioEventSink(JustAudioEventSink const&) = delete;
     JustAudioEventSink& operator=(JustAudioEventSink const&) = delete;
 
-    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id) {
-        auto event_channel =
-                std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance());
+//    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id) {
+//        auto event_channel =
+//                std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance());
+//
+//        auto event_handler = std::make_unique<flutter::StreamHandlerFunctions<>>(
+//                [self = this](const flutter::EncodableValue* arguments, std::unique_ptr<flutter::EventSink<>>&& events) -> std::unique_ptr<flutter::StreamHandlerError<>> {
+//                    self->sink = std::move(events);
+//                    return nullptr;
+//                }, [self = this](const flutter::EncodableValue* arguments) -> std::unique_ptr<flutter::StreamHandlerError<>> {
+//                    self->sink.reset();
+//                    return nullptr;
+//                });
+//
+//        event_channel->SetStreamHandler(std::move(event_handler));
+//    }
+
+//    void Success(const flutter::EncodableValue& event) {
+//        if (sink) {
+//            sink->Success(event);
+//        }
+//    }
+
+    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id, std::shared_ptr<flutter::TaskRunner> task_runner)
+            : task_runner_(std::move(task_runner)) {
+
+        auto event_channel = std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(
+                messenger, id, &flutter::StandardMethodCodec::GetInstance());
 
         auto event_handler = std::make_unique<flutter::StreamHandlerFunctions<>>(
                 [self = this](const flutter::EncodableValue* arguments, std::unique_ptr<flutter::EventSink<>>&& events) -> std::unique_ptr<flutter::StreamHandlerError<>> {
                     self->sink = std::move(events);
                     return nullptr;
-                }, [self = this](const flutter::EncodableValue* arguments) -> std::unique_ptr<flutter::StreamHandlerError<>> {
+                },
+                [self = this](const flutter::EncodableValue* arguments) -> std::unique_ptr<flutter::StreamHandlerError<>> {
                     self->sink.reset();
                     return nullptr;
                 });
@@ -104,7 +129,12 @@ public:
 
     void Success(const flutter::EncodableValue& event) {
         if (sink) {
-            sink->Success(event);
+            // Post the success call to the task runner to ensure it runs on the main thread
+            task_runner_->PostTask([self = this, event]() {
+                if (self->sink) {
+                    self->sink->Success(event);
+                }
+            });
         }
     }
 
@@ -115,6 +145,7 @@ public:
     }
 
 private:
+    std::shared_ptr<flutter::TaskRunner> task_runner_;
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
 
     // Utility function to post a message to the main thread
@@ -145,7 +176,10 @@ public:
   std::unique_ptr<JustAudioEventSink> event_sink_ = nullptr;
   std::unique_ptr<JustAudioEventSink> data_sink_ = nullptr;
 
-  AudioPlayer::AudioPlayer(std::string idx, flutter::BinaryMessenger* messenger) {
+  AudioPlayer::AudioPlayer(
+          std::string idx,
+          flutter::BinaryMessenger* messenger,
+          std::shared_ptr<flutter::TaskRunner> task_runner) {
     id = idx;
 
     // Set up channels
@@ -160,8 +194,8 @@ public:
       player->HandleMethodCall(call, std::move(result));
     });
 
-    event_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.events." + idx);
-    data_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.data." + idx);
+    event_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.events." + idx, task_runner);
+    data_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.data." + idx, task_runner);
 
     /// Set up event callbacks
     // Playback event
