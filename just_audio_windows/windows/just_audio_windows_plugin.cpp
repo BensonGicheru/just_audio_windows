@@ -8,7 +8,7 @@
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
-#include <flutter/task_runner.h>
+#include <flutter/standard_method_codec.h>
 
 #include <map>
 #include <memory>
@@ -38,7 +38,7 @@ class JustAudioWindowsPlugin : public flutter::Plugin {
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result,
       flutter::BinaryMessenger* messenger,
-      std::shared_ptr<flutter::PlatformTaskRunner> task_runner);
+      std::shared_ptr<flutter::TaskRunner> task_runner);
   // Loops through cameras and returns camera
   // with matching camera_id or nullptr.
   AudioPlayer* GetPlayerByPlayerId(std::string id);
@@ -56,7 +56,7 @@ void JustAudioWindowsPlugin::RegisterWithRegistrar(
           &flutter::StandardMethodCodec::GetInstance());
 
   auto plugin = std::make_unique<JustAudioWindowsPlugin>();
-  auto task_runner = registrar->GetView()->GetPlatformTaskRunner();
+  auto task_runner = registrar->GetTaskRunner();
 
   channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get(), messenger_pointer = registrar->messenger()](const auto &call, auto result) {
@@ -74,7 +74,7 @@ void JustAudioWindowsPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result,
     flutter::BinaryMessenger* messenger,
-    std::shared_ptr<flutter::PlatformTaskRunner> task_runner) {
+    std::shared_ptr<flutter::TaskRunner> task_runner) {
   const auto* args =std::get_if<flutter::EncodableMap>(method_call.arguments());
   if (args) {
     if (method_call.method_name().compare("init") == 0) {

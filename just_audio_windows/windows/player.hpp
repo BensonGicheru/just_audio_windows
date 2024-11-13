@@ -108,7 +108,7 @@ public:
 //        }
 //    }
 
-    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id, std::shared_ptr<flutter::PlatformTaskRunner> task_runner)
+    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id, std::shared_ptr<flutter::TaskRunner> task_runner)
             : task_runner_(std::move(task_runner)) {
 
         auto event_channel = std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(
@@ -147,7 +147,7 @@ public:
     }
 
 private:
-    std::shared_ptr<flutter::PlatformTaskRunner> task_runner_;
+    std::shared_ptr<flutter::TaskRunner> task_runner_;
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
 
     // Utility function to post a message to the main thread
@@ -181,7 +181,7 @@ public:
   AudioPlayer::AudioPlayer(
           std::string idx,
           flutter::BinaryMessenger* messenger,
-          std::shared_ptr<flutter::PlatformTaskRunner> task_runner) {
+          std::shared_ptr<flutter::TaskRunner> task_runner) {
     id = idx;
 
     // Set up channels
