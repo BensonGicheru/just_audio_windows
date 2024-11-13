@@ -3,9 +3,12 @@
 #ifndef MAIN_THREAD_DISPATCHER_H_
 #define MAIN_THREAD_DISPATCHER_H_
 
+#include <windows.h>
 #include <functional>
 #include <winrt/Windows.System.h>
-#include <DispatcherQueue.h>        // Required for DispatcherQueue
+#include <DispatcherQueue.h> // Required for DispatcherQueue
+
+using namespace winrt::Windows::System;
 
 class MainThreadDispatcher {
 public:
