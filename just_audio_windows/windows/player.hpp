@@ -19,6 +19,9 @@
 #include <winrt/Windows.System.h>
 #include "url_code.hpp"
 
+#include "main_thread_dispatcher.h"
+
+
 #define TO_MILLISECONDS(timespan) timespan.count() / 10000
 #define TO_MICROSECONDS(timespan) TO_MILLISECONDS(timespan) * 1000
 
@@ -103,9 +106,14 @@ public:
     }
 
     void Success(const flutter::EncodableValue& event) {
-        if (sink) {
-            sink->Success(event);
-        }
+//        if (sink) {
+//            sink->Success(event);
+//        }
+        MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
+            if (sink) {
+                sink->Success(event);
+            }
+        });
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
