@@ -36,7 +36,8 @@ class JustAudioWindowsPlugin : public flutter::Plugin {
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result,
-      flutter::BinaryMessenger* messenger);
+      flutter::BinaryMessenger* messenger,
+      std::shared_ptr<flutter::TaskRunner> task_runner);
   // Loops through cameras and returns camera
   // with matching camera_id or nullptr.
   AudioPlayer* GetPlayerByPlayerId(std::string id);
