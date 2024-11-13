@@ -14,7 +14,7 @@ bool MainThreadDispatcher::Initialize() {
 
     // Create the DispatcherQueueController
     DispatcherQueueOptions options = { sizeof(DispatcherQueueOptions), DQTYPE_THREAD_CURRENT, DQTAT_COM_STA };
-    HRESULT hr = CreateDispatcherQueueController(options, controller_.put());
+    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(controller_.put()));
     if (FAILED(hr)) {
         return false;  // Initialization failed
     }
