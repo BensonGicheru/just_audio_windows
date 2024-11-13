@@ -1,7 +1,5 @@
 #include "include/just_audio_windows/main_thread_dispatcher.h"
 
-#include "main_thread_dispatcher.h"
-
 // Singleton instance
 MainThreadDispatcher& MainThreadDispatcher::Instance() {
     static MainThreadDispatcher instance;
