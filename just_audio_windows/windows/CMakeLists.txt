@@ -10,6 +10,7 @@ set(PLUGIN_NAME "just_audio_windows_plugin")
 
 add_library(${PLUGIN_NAME} SHARED
   "just_audio_windows_plugin.cpp"
+  "main_thread_dispatcher.cpp"
   "player.hpp"
 )
 apply_standard_settings(${PLUGIN_NAME})
