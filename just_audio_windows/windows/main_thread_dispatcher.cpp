@@ -1,4 +1,4 @@
-#include "main_thread_dispatcher.h"
+#include "include/just_audio_windows/main_thread_dispatcher.h"
 
 MainThreadDispatcher& MainThreadDispatcher::Instance() {
     static MainThreadDispatcher instance;
