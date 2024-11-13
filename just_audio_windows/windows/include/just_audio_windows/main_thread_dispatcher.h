@@ -1,5 +1,3 @@
-// main_thread_dispatcher.h
-
 #ifndef MAIN_THREAD_DISPATCHER_H_
 #define MAIN_THREAD_DISPATCHER_H_
 
@@ -12,10 +10,10 @@ using namespace winrt::Windows::System;
 
 class MainThreadDispatcher {
 public:
-    // Singleton instance
+    // Singleton instance of MainThreadDispatcher
     static MainThreadDispatcher& Instance();
 
-    // Initialize the dispatcher, called once
+    // Initializes the dispatcher, should be called once
     bool Initialize();
 
     // Runs a function on the main thread
@@ -26,11 +24,11 @@ private:
     winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
     winrt::com_ptr<IDispatcherQueueController> controller_{ nullptr };
 
-    // Private constructor and destructor for singleton
+    // Private constructor and destructor for singleton pattern
     MainThreadDispatcher();
     ~MainThreadDispatcher() = default;
 
-    // Prevent copying
+    // Prevent copying and assignment
     MainThreadDispatcher(const MainThreadDispatcher&) = delete;
     MainThreadDispatcher& operator=(const MainThreadDispatcher&) = delete;
 };

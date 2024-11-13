@@ -19,7 +19,7 @@
 #include <winrt/Windows.System.h>
 #include "url_code.hpp"
 
-#include "main_thread_dispatcher.h"
+#include "include/just_audio_windows/main_thread_dispatcher.h"
 
 
 #define TO_MILLISECONDS(timespan) timespan.count() / 10000
