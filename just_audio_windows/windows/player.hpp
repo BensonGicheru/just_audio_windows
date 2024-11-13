@@ -5,6 +5,8 @@
 // This must be included before many other Windows headers.
 #include <windows.h>
 
+#include <future>// Include for std::async
+
 #include <flutter/event_channel.h>
 #include <flutter/event_stream_handler_functions.h>
 #include <flutter/method_channel.h>
@@ -18,6 +20,7 @@
 #include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.System.h>
 #include "url_code.hpp"
+
 
 #define TO_MILLISECONDS(timespan) timespan.count() / 10000
 #define TO_MICROSECONDS(timespan) TO_MILLISECONDS(timespan) * 1000
@@ -102,15 +105,36 @@ public:
         event_channel->SetStreamHandler(std::move(event_handler));
     }
 
+//    void Success(const flutter::EncodableValue& event) {
+//        if (sink) {
+//            sink->Success(event);
+//        }
+//    }
+//
+//    void Error(const std::string& error_code, const std::string& error_message) {
+//        if (sink) {
+//            sink->Error(error_code, error_message);
+//        }
+//    }
     void Success(const flutter::EncodableValue& event) {
         if (sink) {
-            sink->Success(event);
+            // Launch an asynchronous task to handle the Success call
+            std::async(std::launch::async, [self = this, event]() {
+                if (self->sink) {
+                    self->sink->Success(event);
+                }
+            });
         }
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
         if (sink) {
-            sink->Error(error_code, error_message);
+            // Launch an asynchronous task to handle the Error call
+            std::async(std::launch::async, [self = this, error_code, error_message]() {
+                if (self->sink) {
+                    self->sink->Error(error_code, error_message);
+                }
+            });
         }
     }
 
