@@ -89,9 +89,8 @@ public:
     JustAudioEventSink(JustAudioEventSink const&) = delete;
     JustAudioEventSink& operator=(JustAudioEventSink const&) = delete;
 
-    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id) {
-        auto event_channel =
-                std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance());
+    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id)
+            : event_channel(std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance())) {
 
         auto event_handler = std::make_unique<flutter::StreamHandlerFunctions<>>(
                 [self = this](const flutter::EncodableValue* arguments, std::unique_ptr<flutter::EventSink<>>&& events) -> std::unique_ptr<flutter::StreamHandlerError<>> {
@@ -107,9 +106,6 @@ public:
 
     void Success(const flutter::EncodableValue& event) {
         std::wcout << L"[just_audio_windows]: Success called" << std::endl;
-//        if (sink) {
-//            sink->Success(event);
-//        }
         MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
             std::wcout << L"[just_audio_windows]: RunOnMainThread succes called" << std::endl;
             if (sink) {
@@ -128,21 +124,7 @@ public:
 
 private:
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
-
-    // Utility function to post a message to the main thread
-    void PostMessageToMainThread(std::function<void()> func) {
-        auto task = new std::function<void()>(std::move(func));
-        PostMessage(nullptr, WM_USER, reinterpret_cast<WPARAM>(task), 0);
-    }
-
-    // Windows message handler for running the posted function on the main thread
-    static void ProcessPostedTasks(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-        if (msg == WM_USER) {
-            auto task = reinterpret_cast<std::function<void()>*>(wparam);
-            (*task)();      // Execute the task
-            delete task;    // Delete task to free memory
-        }
-    }
+    std::unique_ptr<flutter::EventChannel<flutter::EncodableValue>> event_channel;
 };
 
 class AudioPlayer {
