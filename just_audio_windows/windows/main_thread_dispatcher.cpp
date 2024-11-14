@@ -16,6 +16,7 @@ MainThreadDispatcher& MainThreadDispatcher::Instance() {
 }
 
 bool MainThreadDispatcher::Initialize() {
+    std::wcout << L"[just_audio_windows]: MainThreadDispatcher::Initialize() called" << std::endl;
     if (controller_ != nullptr) {
         std::wcout << L"controller_ not null " << std::endl;
         return true; // Already initialized
@@ -33,6 +34,8 @@ bool MainThreadDispatcher::Initialize() {
     if (FAILED(hr)) {
         std::wcout << L"Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
         return false; // Failed to create dispatcher controller
+    } else {
+        std::wcout << L"[just_audio_windows]: Success creating DispatcherQueueController" << std::endl;
     }
 
     // Retrieve and assign the dispatcher queue
