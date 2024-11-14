@@ -1,5 +1,6 @@
 #include "include/just_audio_windows/main_thread_dispatcher.h"
 
+#include <iostream>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.System.h>
 #include <DispatcherQueue.h>
