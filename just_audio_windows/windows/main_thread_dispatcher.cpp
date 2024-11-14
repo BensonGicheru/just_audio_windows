@@ -18,7 +18,7 @@ MainThreadDispatcher& MainThreadDispatcher::Instance() {
 bool MainThreadDispatcher::Initialize() {
     std::wcout << L"[just_audio_windows]: MainThreadDispatcher::Initialize() called" << std::endl;
     if (controller_ != nullptr) {
-        std::wcout << L"controller_ not null " << std::endl;
+        std::wcout << L"[just_audio_windows]: controller_ not null during MainThreadDispatcher initialize" << std::endl;
         return true; // Already initialized
     }
 
@@ -36,9 +36,9 @@ bool MainThreadDispatcher::Initialize() {
         HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
 
         if (FAILED(hr)) {
-            std::wcout << L"Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
+            std::wcout << L"[just_audio_windows]: Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
         } else {
-            std::wcout << L"[just_audio_windows]: Successfully created DispatcherQueueController on background thread" << std::endl;
+            std::wcout << L"[just_audio_windows]: [just_audio_windows]: Successfully created DispatcherQueueController on background thread" << std::endl;
             controller_ = temp_controller;
             dispatcher_queue_ = controller_.DispatcherQueue();
             init_success = dispatcher_queue_ != nullptr;
@@ -52,6 +52,7 @@ bool MainThreadDispatcher::Initialize() {
 
 void MainThreadDispatcher::RunOnMainThread(std::function<void()> func) {
     if (dispatcher_queue_ != nullptr) {
+        std::wcout << L"[just_audio_windows]: RunOnMainThread - dispatcher_queue_ TryEnqueue called" << std::endl;
         dispatcher_queue_.TryEnqueue(std::move(func));
     } else {
         std::wcout << L"[just_audio_windows]: dispatcher_queue_ is null" << std::endl;
