@@ -37,7 +37,7 @@ bool MainThreadDispatcher::Initialize() {
     };
 
     winrt::Windows::System::DispatcherQueueController temp_controller{ nullptr };
-    hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
+    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
 
     if (FAILED(hr)) {
         std::wcout << L"[just_audio_windows]: Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
