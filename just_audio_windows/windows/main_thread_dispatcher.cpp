@@ -4,7 +4,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.System.h>
 #include <DispatcherQueue.h>
-
+#include <thread>
 
 // Singleton instance
 
@@ -22,26 +22,32 @@ bool MainThreadDispatcher::Initialize() {
         return true; // Already initialized
     }
 
-    DispatcherQueueOptions options{
-            sizeof(DispatcherQueueOptions),
-            DQTYPE_THREAD_CURRENT,
-            DQTAT_COM_NONE
-    };
+    bool init_success = false;
 
-    // Use the DispatcherQueueController directly without casting to IDispatcherQueueController
-    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(controller_)));
+    // Run on a background thread
+    std::thread dispatcher_init_thread([&]() {
+        DispatcherQueueOptions options{
+                sizeof(DispatcherQueueOptions),
+                DQTYPE_THREAD_CURRENT,
+                DQTAT_COM_NONE
+        };
 
-    if (FAILED(hr)) {
-        std::wcout << L"Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
-        return false; // Failed to create dispatcher controller
-    } else {
-        std::wcout << L"[just_audio_windows]: Success creating DispatcherQueueController" << std::endl;
-    }
+        winrt::Windows::System::DispatcherQueueController temp_controller{ nullptr };
+        HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
 
-    // Retrieve and assign the dispatcher queue
-    dispatcher_queue_ = controller_.DispatcherQueue();
+        if (FAILED(hr)) {
+            std::wcout << L"Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
+        } else {
+            std::wcout << L"[just_audio_windows]: Successfully created DispatcherQueueController on background thread" << std::endl;
+            controller_ = temp_controller;
+            dispatcher_queue_ = controller_.DispatcherQueue();
+            init_success = dispatcher_queue_ != nullptr;
+        }
+    });
 
-    return dispatcher_queue_ != nullptr;
+    dispatcher_init_thread.join(); // Wait for the thread to complete
+
+    return init_success;
 }
 
 void MainThreadDispatcher::RunOnMainThread(std::function<void()> func) {
