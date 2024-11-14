@@ -41,8 +41,8 @@ bool MainThreadDispatcher::Initialize() {
     winrt::com_ptr<winrt::Windows::System::IDispatcherQueueController> temp_controller;
 
     // Create the dispatcher queue controller
-    // Here we use `put_void()` which is specifically designed to return a raw pointer to the controller
-    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put_void());
+    // Use `put_abi()` to pass the correct pointer type
+    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put_abi());
 
     if (FAILED(hr)) {
         // Log the HRESULT error for debugging
@@ -50,12 +50,17 @@ bool MainThreadDispatcher::Initialize() {
         return false; // Failed to create dispatcher controller
     }
 
-    // Since controller_ is of type `winrt::Windows::System::DispatcherQueueController`
-    // we can safely assign `temp_controller` (which is a `com_ptr<IDispatcherQueueController>`) to it
+    // Assign the controller (temp_controller is of type com_ptr<IDispatcherQueueController>)
     controller_ = temp_controller.as<winrt::Windows::System::DispatcherQueueController>();
 
     // Retrieve and assign the dispatcher queue
     dispatcher_queue_ = controller_.DispatcherQueue();
+
+    // Ensure the dispatcher queue was successfully retrieved
+    if (dispatcher_queue_ == nullptr) {
+        std::wcout << L"Failed to retrieve DispatcherQueue from controller." << std::endl;
+        return false;
+    }
 
     return dispatcher_queue_ != nullptr;
 }
