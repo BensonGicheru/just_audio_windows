@@ -42,7 +42,7 @@ bool MainThreadDispatcher::Initialize() {
 
     // Create the dispatcher queue controller
     // Use `put_abi()` to pass the correct pointer type
-    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put_abi());
+    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put());
 
     if (FAILED(hr)) {
         // Log the HRESULT error for debugging
