@@ -16,8 +16,7 @@ MainThreadDispatcher& MainThreadDispatcher::Instance() {
 }
 
 bool MainThreadDispatcher::Initialize() {
-    std::wcout << L"[just_audio_windows]: MainThreadDispatcher::Initialize() called" << std::endl;
-
+    std::wcout << L"MainThreadDispatcher::Initialize() called. Current Thread ID: " << GetCurrentThreadId() << std::endl;
     if (controller_ != nullptr) {
         std::wcout << L"[just_audio_windows]: controller_ not null during MainThreadDispatcher initialize" << std::endl;
         return true; // Already initialized
