@@ -1,6 +1,7 @@
 #pragma comment(lib, "windowsapp")
 
 #include "include/just_audio_windows/just_audio_windows_plugin.h"
+#include "include/just_audio_windows/main_thread_dispatcher.h"
 
 // This must be included before many other Windows headers.
 #include <windows.h>
@@ -48,6 +49,10 @@ class JustAudioWindowsPlugin : public flutter::Plugin {
 // static
 void JustAudioWindowsPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows *registrar) {
+  // Initialize MainThreadDispatcher only once
+  if (!MainThreadDispatcher::Instance().Initialize()) {
+    std::cerr << "Failed to initialize MainThreadDispatcher." << std::endl;
+  }
   auto channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
           registrar->messenger(), "com.ryanheise.just_audio.methods",

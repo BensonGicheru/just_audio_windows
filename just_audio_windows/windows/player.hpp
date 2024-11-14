@@ -106,12 +106,12 @@ public:
     }
 
     void Success(const flutter::EncodableValue& event) {
-        std::wcout << L"[just_audio_windows]: Success" << std::endl;
+        std::wcout << L"[just_audio_windows]: Success called" << std::endl;
 //        if (sink) {
 //            sink->Success(event);
 //        }
         MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
-            std::wcout << L"[just_audio_windows]: RunOnMainThread success" << std::endl;
+            std::wcout << L"[just_audio_windows]: RunOnMainThread succes called" << std::endl;
             if (sink) {
                 sink->Success(event);
             } else {
