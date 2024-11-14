@@ -1,5 +1,9 @@
 #include "include/just_audio_windows/main_thread_dispatcher.h"
 
+#include <winrt/Windows.Foundation.h>
+#include <DispatcherQueue.h>
+
+
 // Singleton instance
 MainThreadDispatcher::MainThreadDispatcher() = default;
 
@@ -13,22 +17,25 @@ bool MainThreadDispatcher::Initialize() {
         return true; // Already initialized
     }
 
-    // Create a DispatcherQueueController instance
-    DispatcherQueueOptions options{};
-//    HRESULT hr = CreateDispatcherQueueController(options, controller_.put());
-    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(controller_.put()));
+    DispatcherQueueOptions options{
+            sizeof(DispatcherQueueOptions),
+            DQTYPE_THREAD_CURRENT,
+            DQTAT_COM_NONE
+    };
+
+    // Now using DispatcherQueueController directly for controller_
+    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<ABI::Windows::System::DispatcherQueueController**>(winrt::put_abi(controller_)));
     if (FAILED(hr)) {
         return false; // Failed to create dispatcher controller
     }
 
-    // Get the DispatcherQueue from the controller
-    dispatcher_queue_ = controller_->DispatcherQueue();
+    // Retrieve the dispatcher queue from the controller
+    dispatcher_queue_ = controller_.DispatcherQueue();
 
-    return true; // Successfully initialized
+    return dispatcher_queue_ != nullptr;
 }
 
 void MainThreadDispatcher::RunOnMainThread(std::function<void()> func) {
-    // Make sure the dispatcher queue is initialized
     if (dispatcher_queue_ != nullptr) {
         dispatcher_queue_.TryEnqueue(std::move(func));
     }

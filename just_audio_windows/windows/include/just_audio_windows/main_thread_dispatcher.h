@@ -1,12 +1,10 @@
 #ifndef MAIN_THREAD_DISPATCHER_H_
 #define MAIN_THREAD_DISPATCHER_H_
 
-#include <windows.h>
 #include <functional>
+#include <windows.h>
 #include <winrt/Windows.System.h>
-#include <DispatcherQueue.h> // Required for DispatcherQueue
-
-using namespace winrt::Windows::System;
+#include <DispatcherQueue.h>
 
 class MainThreadDispatcher {
 public:
@@ -20,9 +18,9 @@ public:
     void RunOnMainThread(std::function<void()> func);
 
 private:
-    // Private members for dispatcher and controller
+    // Use DispatcherQueueController directly instead of IDispatcherQueueController
     winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
-    winrt::com_ptr<IDispatcherQueueController> controller_{ nullptr };
+    winrt::Windows::System::DispatcherQueueController controller_{ nullptr };
 
     // Private constructor and destructor for singleton
     MainThreadDispatcher();
