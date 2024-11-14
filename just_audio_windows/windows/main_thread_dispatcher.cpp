@@ -5,6 +5,7 @@
 
 
 // Singleton instance
+
 MainThreadDispatcher::MainThreadDispatcher() = default;
 
 MainThreadDispatcher& MainThreadDispatcher::Instance() {
@@ -23,11 +24,15 @@ bool MainThreadDispatcher::Initialize() {
             DQTAT_COM_NONE
     };
 
-    // Now using DispatcherQueueController directly for controller_
-    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<ABI::Windows::System::DispatcherQueueController**>(winrt::put_abi(controller_)));
+    // Using a winrt::com_ptr to hold the raw pointer for CreateDispatcherQueueController
+    winrt::com_ptr<IDispatcherQueueController> temp_controller;
+    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put());
     if (FAILED(hr)) {
         return false; // Failed to create dispatcher controller
     }
+
+    // Assign the created controller to our member variable
+    controller_ = temp_controller.as<winrt::Windows::System::DispatcherQueueController>();
 
     // Retrieve the dispatcher queue from the controller
     dispatcher_queue_ = controller_.DispatcherQueue();
