@@ -37,9 +37,12 @@ bool MainThreadDispatcher::Initialize() {
 //    // Assign the controller
 //    controller_ = temp_controller;
 
-    // Creating a temp controller and passing it using put()
+    // Create a temp controller as a com_ptr for IDispatcherQueueController
     winrt::com_ptr<winrt::Windows::System::IDispatcherQueueController> temp_controller;
-    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put());
+
+    // Create the dispatcher queue controller
+    // Here we use `put_void()` which is specifically designed to return a raw pointer to the controller
+    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put_void());
 
     if (FAILED(hr)) {
         // Log the HRESULT error for debugging
