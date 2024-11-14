@@ -19,8 +19,8 @@ public:
 
 private:
     // Use DispatcherQueueController directly instead of IDispatcherQueueController
+    winrt::com_ptr<IDispatcherQueueController> controller_{ nullptr };
     winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
-    winrt::Windows::System::DispatcherQueueController controller_{ nullptr };
 
     // Private constructor and destructor for singleton
     MainThreadDispatcher();

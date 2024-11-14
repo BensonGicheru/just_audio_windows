@@ -42,7 +42,8 @@ bool MainThreadDispatcher::Initialize() {
 
     // Create the dispatcher queue controller
     // Use `put_abi()` to pass the correct pointer type
-    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put());
+//    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put());
+    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put_abi());
 
     if (FAILED(hr)) {
         // Log the HRESULT error for debugging
@@ -51,7 +52,8 @@ bool MainThreadDispatcher::Initialize() {
     }
 
     // Assign the controller (temp_controller is of type com_ptr<IDispatcherQueueController>)
-    controller_ = temp_controller.as<winrt::Windows::System::DispatcherQueueController>();
+//    controller_ = temp_controller.as<winrt::Windows::System::DispatcherQueueController>();
+    controller_ = temp_controller;
 
     // Retrieve and assign the dispatcher queue
     dispatcher_queue_ = controller_.DispatcherQueue();
