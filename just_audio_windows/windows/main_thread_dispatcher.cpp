@@ -45,5 +45,7 @@ bool MainThreadDispatcher::Initialize() {
 void MainThreadDispatcher::RunOnMainThread(std::function<void()> func) {
     if (dispatcher_queue_ != nullptr) {
         dispatcher_queue_.TryEnqueue(std::move(func));
+    } else {
+        std::wcout << L"[just_audio_windows]: dispatcher_queue_ is null" << std::endl;
     }
 }
