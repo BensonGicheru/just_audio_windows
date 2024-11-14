@@ -27,42 +27,15 @@ bool MainThreadDispatcher::Initialize() {
     };
 
     // Use the DispatcherQueueController directly without casting to IDispatcherQueueController
-//    winrt::Windows::System::DispatcherQueueController temp_controller{ nullptr };
-//    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
-//
-//    if (FAILED(hr)) {
-//        return false; // Failed to create dispatcher controller
-//    }
-//
-//    // Assign the controller
-//    controller_ = temp_controller;
-
-    // Create a temp controller as a com_ptr for IDispatcherQueueController
-    winrt::com_ptr<winrt::Windows::System::IDispatcherQueueController> temp_controller;
-
-    // Create the dispatcher queue controller
-    // Use `put_abi()` to pass the correct pointer type
-//    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put());
-    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put_abi());
+    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(controller_)));
 
     if (FAILED(hr)) {
-        // Log the HRESULT error for debugging
         std::wcout << L"Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
         return false; // Failed to create dispatcher controller
     }
 
-    // Assign the controller (temp_controller is of type com_ptr<IDispatcherQueueController>)
-//    controller_ = temp_controller.as<winrt::Windows::System::DispatcherQueueController>();
-    controller_ = temp_controller;
-
     // Retrieve and assign the dispatcher queue
     dispatcher_queue_ = controller_.DispatcherQueue();
-
-    // Ensure the dispatcher queue was successfully retrieved
-    if (dispatcher_queue_ == nullptr) {
-        std::wcout << L"Failed to retrieve DispatcherQueue from controller." << std::endl;
-        return false;
-    }
 
     return dispatcher_queue_ != nullptr;
 }
