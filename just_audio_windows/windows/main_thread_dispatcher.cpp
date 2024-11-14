@@ -53,7 +53,12 @@ bool MainThreadDispatcher::Initialize() {
 void MainThreadDispatcher::RunOnMainThread(std::function<void()> func) {
     if (dispatcher_queue_ != nullptr) {
         std::wcout << L"[just_audio_windows]: RunOnMainThread - dispatcher_queue_ TryEnqueue called" << std::endl;
-        dispatcher_queue_.TryEnqueue(std::move(func));
+        bool enqueued = dispatcher_queue_.TryEnqueue(std::move(func));
+        if (!enqueued) {
+            std::wcout << L"[just_audio_windows]: RunOnMainThread dispatcher_queue_ Failed to enqueue task" << std::endl;
+        } else {
+            std::wcout << L"[just_audio_windows]: RunOnMainThread dispatcher_queue_ Task enqueued" << std::endl;
+        }
     } else {
         std::wcout << L"[just_audio_windows]: dispatcher_queue_ is null" << std::endl;
     }
