@@ -1,6 +1,7 @@
 #include "include/just_audio_windows/main_thread_dispatcher.h"
 
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.System.h>
 #include <DispatcherQueue.h>
 
 
@@ -24,17 +25,18 @@ bool MainThreadDispatcher::Initialize() {
             DQTAT_COM_NONE
     };
 
-    // Using a winrt::com_ptr to hold the raw pointer for CreateDispatcherQueueController
-    winrt::com_ptr<IDispatcherQueueController> temp_controller;
-    HRESULT hr = CreateDispatcherQueueController(options, temp_controller.put());
+    // Use the DispatcherQueueController directly without casting to IDispatcherQueueController
+    winrt::Windows::System::DispatcherQueueController temp_controller{ nullptr };
+    HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
+
     if (FAILED(hr)) {
         return false; // Failed to create dispatcher controller
     }
 
-    // Assign the created controller to our member variable
-    controller_ = temp_controller.as<winrt::Windows::System::DispatcherQueueController>();
+    // Assign the controller
+    controller_ = temp_controller;
 
-    // Retrieve the dispatcher queue from the controller
+    // Retrieve and assign the dispatcher queue
     dispatcher_queue_ = controller_.DispatcherQueue();
 
     return dispatcher_queue_ != nullptr;
