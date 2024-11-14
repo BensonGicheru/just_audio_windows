@@ -17,7 +17,7 @@ MainThreadDispatcher& MainThreadDispatcher::Instance() {
 
 bool MainThreadDispatcher::Initialize() {
     if (controller_ != nullptr) {
-        std::wcout << L"controller_ not null " << std::hex << hr << std::endl;
+        std::wcout << L"controller_ not null " << std::endl;
         return true; // Already initialized
     }
 
