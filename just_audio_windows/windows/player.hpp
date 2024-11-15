@@ -92,7 +92,8 @@ public:
     JustAudioEventSink(JustAudioEventSink const&) = delete;
     JustAudioEventSink& operator=(JustAudioEventSink const&) = delete;
 
-    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id) {
+    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id, DWORD platform_thread_id) {
+        platform_thread_id_ = platform_thread_id;
         auto event_channel =
                 std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance());
 
@@ -127,20 +128,28 @@ public:
 //            }
 //        });
 
-        if (dispatcher_queue_ && !dispatcher_queue_.HasThreadAccess()) {
-            std::wcout << L"DispatcherQueue does not have thread access in Success." << std::endl;
-        }
+//        if (sink && dispatcher_queue_) {
+//            dispatcher_queue_.TryEnqueue([self = this, event]() {
+//                if (self->sink) {
+//                    self->sink->Success(event);
+//                } else {
+//                    std::wcout << L"[just_audio_windows]: JustAudioEventSink - TryEnqueue - self->sink null" << std::endl;
+//                }
+//            });
+//        } else {
+//            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink or dispatcher_queue_ null" << std::endl;
+//        }
 
-        if (sink && dispatcher_queue_) {
-            dispatcher_queue_.TryEnqueue([self = this, event]() {
+        if (sink) {
+            PostMessageToPlatformThread([self = this, event]() {
                 if (self->sink) {
                     self->sink->Success(event);
                 } else {
-                    std::wcout << L"[just_audio_windows]: JustAudioEventSink - TryEnqueue - self->sink null" << std::endl;
+                    std::wcout << L"Sink is null, unable to send event." << std::endl;
                 }
             });
         } else {
-            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink or dispatcher_queue_ null" << std::endl;
+            std::wcout << L"Sink is null, unable to send event." << std::endl;
         }
     }
 
@@ -148,6 +157,10 @@ public:
         if (sink) {
             sink->Error(error_code, error_message);
         }
+    }
+
+    void PostMessageToPlatformThread(std::function<void()> task) {
+        PostThreadMessage(platform_thread_id_, WM_USER, reinterpret_cast<WPARAM>(&task), 0);
     }
 
     // Initializes DispatcherQueue for the main thread
@@ -176,6 +189,7 @@ public:
 private:
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
     winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
+    DWORD platform_thread_id_ = nullptr;
 };
 
 class AudioPlayer {
@@ -190,7 +204,7 @@ public:
   std::unique_ptr<JustAudioEventSink> event_sink_ = nullptr;
   std::unique_ptr<JustAudioEventSink> data_sink_ = nullptr;
 
-  AudioPlayer::AudioPlayer(std::string idx, flutter::BinaryMessenger* messenger) {
+  AudioPlayer::AudioPlayer(std::string idx, flutter::BinaryMessenger* messenger, DWORD platform_thread_id) {
     id = idx;
 
     // Set up channels
@@ -205,8 +219,8 @@ public:
       player->HandleMethodCall(call, std::move(result));
     });
 
-    event_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.events." + idx);
-    data_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.data." + idx);
+    event_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.events." + idx, platform_thread_id);
+    data_sink_ = std::make_unique<JustAudioEventSink>(messenger, "com.ryanheise.just_audio.data." + idx, platform_thread_id);
 
     /// Set up event callbacks
     // Playback event
