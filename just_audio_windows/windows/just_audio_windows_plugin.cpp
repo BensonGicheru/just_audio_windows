@@ -50,14 +50,11 @@ class JustAudioWindowsPlugin : public flutter::Plugin {
 void JustAudioWindowsPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows *registrar) {
   std::wcout << L"[just_audio_windows]: RegisterWithRegistrar called" << std::endl;
-  // Defer dispatcher initialization until the main thread is available.
-  registrar->GetTaskRunner()->PostTask([=]() {
-      // Initialize MainThreadDispatcher only once
-      MainThreadDispatcher::Instance().Initialize();
-  });
 
+  // Initialize MainThreadDispatcher only once
+  MainThreadDispatcher::Instance().Initialize();
 
-        auto channel =
+  auto channel =
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
           registrar->messenger(), "com.ryanheise.just_audio.methods",
           &flutter::StandardMethodCodec::GetInstance());

@@ -89,8 +89,9 @@ public:
     JustAudioEventSink(JustAudioEventSink const&) = delete;
     JustAudioEventSink& operator=(JustAudioEventSink const&) = delete;
 
-    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id)
-            : event_channel(std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance())) {
+    JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id) {
+        auto event_channel =
+                std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance());
 
         auto event_handler = std::make_unique<flutter::StreamHandlerFunctions<>>(
                 [self = this](const flutter::EncodableValue* arguments, std::unique_ptr<flutter::EventSink<>>&& events) -> std::unique_ptr<flutter::StreamHandlerError<>> {
@@ -106,14 +107,19 @@ public:
 
     void Success(const flutter::EncodableValue& event) {
         std::wcout << L"[just_audio_windows]: JustAudioEventSink - Success called. Current Thread ID: " << GetCurrentThreadId() << std::endl;
-        MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
-            std::wcout << L"[just_audio_windows]: JustAudioEventSink - RunOnMainThread succes called" << std::endl;
-            if (sink) {
-                sink->Success(event);
-            } else {
-                std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
-            }
-        });
+        if (sink) {
+            sink->Success(event);
+        } else {
+            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
+        }
+//        MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
+//            std::wcout << L"[just_audio_windows]: JustAudioEventSink - RunOnMainThread succes called" << std::endl;
+//            if (sink) {
+//                sink->Success(event);
+//            } else {
+//                std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
+//            }
+//        });
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
@@ -124,7 +130,6 @@ public:
 
 private:
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
-    std::unique_ptr<flutter::EventChannel<flutter::EncodableValue>> event_channel;
 };
 
 class AudioPlayer {
