@@ -128,7 +128,7 @@ public:
 //        });
 
         if (sink && dispatcher_queue_) {
-            dispatcher_queue_->TryEnqueue([self = this, event]() {
+            dispatcher_queue_.TryEnqueue([self = this, event]() {
                 if (self->sink) {
                     self->sink->Success(event);
                 } else {
