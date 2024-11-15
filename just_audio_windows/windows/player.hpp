@@ -112,11 +112,11 @@ public:
 
     void Success(const flutter::EncodableValue& event) {
         std::wcout << L"[just_audio_windows]: JustAudioEventSink - Success called. Current Thread ID: " << GetCurrentThreadId() << std::endl;
-//        if (sink) {
-//            sink->Success(event);
-//        } else {
-//            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
-//        }
+        if (sink) {
+            sink->Success(event);
+        } else {
+            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
+        }
 
 //        MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
 //            std::wcout << L"[just_audio_windows]: JustAudioEventSink - RunOnMainThread succes called" << std::endl;
@@ -127,18 +127,18 @@ public:
 //            }
 //        });
 
-        if (sink) {
-            PostMessageToPlatformThread([self = this, event]() {
-                if (self->sink) {
-                    std::wcout << L"self->sink->Success(event) called" << std::endl;
-                    self->sink->Success(event);
-                } else {
-                    std::wcout << L"Sink is null, unable to send event." << std::endl;
-                }
-            });
-        } else {
-            std::wcout << L"Sink is null, unable to send event." << std::endl;
-        }
+//        if (sink) {
+//            PostMessageToPlatformThread([self = this, event]() {
+//                if (self->sink) {
+//                    std::wcout << L"self->sink->Success(event) called" << std::endl;
+//                    self->sink->Success(event);
+//                } else {
+//                    std::wcout << L"Sink is null, unable to send event." << std::endl;
+//                }
+//            });
+//        } else {
+//            std::wcout << L"Sink is null, unable to send event." << std::endl;
+//        }
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
@@ -306,7 +306,7 @@ public:
             std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result
     ) {
         // Set current platform thread id
-        event_sink_->setPlatformThreadId(GetCurrentThreadId());
+        // event_sink_->setPlatformThreadId(GetCurrentThreadId());
         const auto* args = std::get_if<flutter::EncodableMap>(method_call.arguments());
 
         std::cerr << "[just_audio_windows] Called " << method_call.method_name() << std::endl;
@@ -587,7 +587,7 @@ public:
 
     void AudioPlayer::broadcastState() {
         // Set current platform thread id
-        event_sink_->setPlatformThreadId(GetCurrentThreadId());
+        // event_sink_->setPlatformThreadId(GetCurrentThreadId());
         try {
             broadcastPlaybackEvent();
         } catch (winrt::hresult_error const& ex) {
@@ -603,7 +603,7 @@ public:
 
     void AudioPlayer::broadcastPlaybackEvent() {
         // Set current platform thread id
-        event_sink_->setPlatformThreadId(GetCurrentThreadId());
+        // event_sink_->setPlatformThreadId(GetCurrentThreadId());
         auto session = mediaPlayer.PlaybackSession();
 
         auto eventData = flutter::EncodableMap();
