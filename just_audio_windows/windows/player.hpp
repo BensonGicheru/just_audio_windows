@@ -93,6 +93,7 @@ public:
     JustAudioEventSink& operator=(JustAudioEventSink const&) = delete;
 
     JustAudioEventSink(flutter::BinaryMessenger* messenger, const std::string& id, DWORD platform_thread_id) {
+        // platform_thread_id is got on RegisterWithRegistrar on just_audio_windows_plugin.cpp
         platform_thread_id_ = platform_thread_id;
         auto event_channel =
                 std::make_unique<flutter::EventChannel<flutter::EncodableValue>>(messenger, id, &flutter::StandardMethodCodec::GetInstance());
@@ -107,9 +108,6 @@ public:
                 });
 
         event_channel->SetStreamHandler(std::move(event_handler));
-
-        // Initialize DispatcherQueue for main-thread access
-//        InitializeDispatcherQueue();
     }
 
     void Success(const flutter::EncodableValue& event) {
@@ -119,6 +117,7 @@ public:
 //        } else {
 //            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
 //        }
+
 //        MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
 //            std::wcout << L"[just_audio_windows]: JustAudioEventSink - RunOnMainThread succes called" << std::endl;
 //            if (sink) {
@@ -128,20 +127,7 @@ public:
 //            }
 //        });
 
-//        if (sink && dispatcher_queue_) {
-//            dispatcher_queue_.TryEnqueue([self = this, event]() {
-//                if (self->sink) {
-//                    self->sink->Success(event);
-//                } else {
-//                    std::wcout << L"[just_audio_windows]: JustAudioEventSink - TryEnqueue - self->sink null" << std::endl;
-//                }
-//            });
-//        } else {
-//            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink or dispatcher_queue_ null" << std::endl;
-//        }
-
         if (sink) {
-            platform_thread_id_ = GetCurrentThreadId();
             PostMessageToPlatformThread([self = this, event]() {
                 if (self->sink) {
                     std::wcout << L"self->sink->Success(event) called" << std::endl;
@@ -167,26 +153,9 @@ public:
     }
 
     // Initializes DispatcherQueue for the main thread
-    void InitializeDispatcherQueue() {
-        if (!dispatcher_queue_) {
-            dispatcher_queue_ = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
-            if (!dispatcher_queue_) {
-                // For cases where there is no DispatcherQueue for the current thread, create one.
-                DispatcherQueueOptions options{
-                        sizeof(DispatcherQueueOptions),
-                        DQTYPE_THREAD_CURRENT,
-                        DQTAT_COM_STA
-                };
-                winrt::Windows::System::DispatcherQueueController temp_controller{ nullptr };
-                HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
-                if (FAILED(hr)) {
-                    std::wcout << L"[just_audio_windows]: Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
-                } else {
-                    std::wcout << L"[just_audio_windows]: Successfully created DispatcherQueueController" << std::endl;
-                }
-                dispatcher_queue_ = temp_controller.DispatcherQueue();
-            }
-        }
+    void setPlatformThreadId(DWORD platform_thread_id) {
+        platform_thread_id_ = platform_thread_id;
+        std::wcout << L"[just_audio_windows]: setPlatformThreadId to: " << platform_thread_id << std::endl;
     }
 
 private:
@@ -227,10 +196,6 @@ public:
 
     /// Set up event callbacks
     // Playback event
-    // mediaPlayer.PlaybackSession().PlaybackStateChanged([=](auto, const auto& args) -> void {
-    //   broadcastState();
-    // });
-
     mediaPlayer.PlaybackSession().PlaybackStateChanged([=](auto, const auto& args) -> void {
         auto session = mediaPlayer.PlaybackSession();
         auto state = session.PlaybackState();
@@ -340,6 +305,8 @@ public:
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result
   ) {
+    // Set current platform thread id
+    event_sink_->setPlatformThreadId(GetCurrentThreadId());
     const auto* args = std::get_if<flutter::EncodableMap>(method_call.arguments());
 
     std::cerr << "[just_audio_windows] Called " << method_call.method_name() << std::endl;
@@ -619,9 +586,6 @@ public:
 
 
   void AudioPlayer::broadcastState() {
-   // Initializes DispatcherQueue for the main thread
-   event_sink_->InitializeDispatcherQueue();
-
     try {
       broadcastPlaybackEvent();
     } catch (winrt::hresult_error const& ex) {
@@ -636,9 +600,6 @@ public:
   }
 
   void AudioPlayer::broadcastPlaybackEvent() {
-    // Initializes DispatcherQueue for the main thread
-    event_sink_->InitializeDispatcherQueue();
-
     auto session = mediaPlayer.PlaybackSession();
 
     auto eventData = flutter::EncodableMap();
