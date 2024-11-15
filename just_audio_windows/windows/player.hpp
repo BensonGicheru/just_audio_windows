@@ -141,9 +141,9 @@ public:
 //        }
 
         if (sink) {
-            std::wcout << L"Sink not null." << std::endl;
             PostMessageToPlatformThread([self = this, event]() {
                 if (self->sink) {
+                    std::wcout << L"self->sink->Success(event) called" << std::endl;
                     self->sink->Success(event);
                 } else {
                     std::wcout << L"Sink is null, unable to send event." << std::endl;
@@ -161,8 +161,8 @@ public:
     }
 
     void PostMessageToPlatformThread(std::function<void()> task) {
+        std::wcout << L"[just_audio_windows]: PostThreadMessage: " << platform_thread_id_ << std::endl;
         PostThreadMessage(platform_thread_id_, WM_USER, reinterpret_cast<WPARAM>(&task), 0);
-        std::wcout << L"PostThreadMessage called" << std::endl;
     }
 
     // Initializes DispatcherQueue for the main thread
