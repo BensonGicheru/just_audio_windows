@@ -127,6 +127,10 @@ public:
 //            }
 //        });
 
+        if (dispatcher_queue_ && !dispatcher_queue_.HasThreadAccess()) {
+            std::wcout << L"DispatcherQueue does not have thread access in Success." << std::endl;
+        }
+
         if (sink && dispatcher_queue_) {
             dispatcher_queue_.TryEnqueue([self = this, event]() {
                 if (self->sink) {
