@@ -61,10 +61,14 @@ void JustAudioWindowsPlugin::RegisterWithRegistrar(
 
   auto plugin = std::make_unique<JustAudioWindowsPlugin>();
 
+//  channel->SetMethodCallHandler(
+//      [plugin_pointer = plugin.get(), messenger_pointer = registrar->messenger()](const auto &call, auto result) {
+//        plugin_pointer->HandleMethodCall(call, std::move(result), std::move(messenger_pointer), std::move(platform_thread_id));
+//      });
   channel->SetMethodCallHandler(
-      [plugin_pointer = plugin.get(), messenger_pointer = registrar->messenger()](const auto &call, auto result) {
-        plugin_pointer->HandleMethodCall(call, std::move(result), std::move(messenger_pointer), std::move(platform_thread_id));
-      });
+        [plugin_pointer = plugin.get(), messenger_pointer = registrar->messenger(), &platform_thread_id](const auto &call, auto result) {
+            plugin_pointer->HandleMethodCall(call, std::move(result), std::move(messenger_pointer), std::move(platform_thread_id));
+        });
 
   registrar->AddPlugin(std::move(plugin));
 }
