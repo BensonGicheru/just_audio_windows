@@ -108,7 +108,7 @@ public:
         event_channel->SetStreamHandler(std::move(event_handler));
 
         // Initialize DispatcherQueue for main-thread access
-        InitializeDispatcherQueue();
+//        InitializeDispatcherQueue();
     }
 
     void Success(const flutter::EncodableValue& event) {
@@ -146,10 +146,6 @@ public:
         }
     }
 
-private:
-    std::unique_ptr<flutter::EventSink<>> sink = nullptr;
-    winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
-
     // Initializes DispatcherQueue for the main thread
     void InitializeDispatcherQueue() {
         if (!dispatcher_queue_) {
@@ -172,6 +168,10 @@ private:
             }
         }
     }
+
+private:
+    std::unique_ptr<flutter::EventSink<>> sink = nullptr;
+    winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
 };
 
 class AudioPlayer {
@@ -598,6 +598,9 @@ public:
 
 
   void AudioPlayer::broadcastState() {
+   // Initializes DispatcherQueue for the main thread
+   event_sink_->InitializeDispatcherQueue();
+
     try {
       broadcastPlaybackEvent();
     } catch (winrt::hresult_error const& ex) {
@@ -612,6 +615,9 @@ public:
   }
 
   void AudioPlayer::broadcastPlaybackEvent() {
+    // Initializes DispatcherQueue for the main thread
+    event_sink_->InitializeDispatcherQueue();
+
     auto session = mediaPlayer.PlaybackSession();
 
     auto eventData = flutter::EncodableMap();
