@@ -141,6 +141,7 @@ public:
 //        }
 
         if (sink) {
+            platform_thread_id_ = GetCurrentThreadId();
             PostMessageToPlatformThread([self = this, event]() {
                 if (self->sink) {
                     std::wcout << L"self->sink->Success(event) called" << std::endl;
