@@ -19,6 +19,9 @@
 #include <winrt/Windows.System.h>
 #include "url_code.hpp"
 
+#include <DispatcherQueue.h>
+#include <thread>
+
 #include "include/just_audio_windows/main_thread_dispatcher.h"
 
 
@@ -103,15 +106,18 @@ public:
                 });
 
         event_channel->SetStreamHandler(std::move(event_handler));
+
+        // Initialize DispatcherQueue for main-thread access
+        InitializeDispatcherQueue();
     }
 
     void Success(const flutter::EncodableValue& event) {
         std::wcout << L"[just_audio_windows]: JustAudioEventSink - Success called. Current Thread ID: " << GetCurrentThreadId() << std::endl;
-        if (sink) {
-            sink->Success(event);
-        } else {
-            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
-        }
+//        if (sink) {
+//            sink->Success(event);
+//        } else {
+//            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
+//        }
 //        MainThreadDispatcher::Instance().RunOnMainThread([this, event]() {
 //            std::wcout << L"[just_audio_windows]: JustAudioEventSink - RunOnMainThread succes called" << std::endl;
 //            if (sink) {
@@ -120,6 +126,18 @@ public:
 //                std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink is null" << std::endl;
 //            }
 //        });
+
+        if (sink && dispatcher_queue_) {
+            dispatcher_queue_->TryEnqueue([self = this, event]() {
+                if (self->sink) {
+                    self->sink->Success(event);
+                } else {
+                    std::wcout << L"[just_audio_windows]: JustAudioEventSink - TryEnqueue - self->sink null" << std::endl;
+                }
+            });
+        } else {
+            std::wcout << L"[just_audio_windows]: JustAudioEventSink - Sink or dispatcher_queue_ null" << std::endl;
+        }
     }
 
     void Error(const std::string& error_code, const std::string& error_message) {
@@ -130,6 +148,25 @@ public:
 
 private:
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
+    winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
+
+    // Initializes DispatcherQueue for the main thread
+    void InitializeDispatcherQueue() {
+        if (!dispatcher_queue_) {
+            dispatcher_queue_ = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
+            if (!dispatcher_queue_) {
+                // For cases where there is no DispatcherQueue for the current thread, create one.
+                DispatcherQueueOptions options{
+                        sizeof(DispatcherQueueOptions),
+                        DQTYPE_THREAD_CURRENT,
+                        DQTAT_COM_STA
+                };
+                winrt::Windows::System::DispatcherQueueController controller{ nullptr };
+                winrt::Windows::System::DispatcherQueueController::CreateOnCurrentThread(options, &controller);
+                dispatcher_queue_ = controller.DispatcherQueue();
+            }
+        }
+    }
 };
 
 class AudioPlayer {
