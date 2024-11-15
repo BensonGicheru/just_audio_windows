@@ -189,7 +189,7 @@ public:
 private:
     std::unique_ptr<flutter::EventSink<>> sink = nullptr;
     winrt::Windows::System::DispatcherQueue dispatcher_queue_{ nullptr };
-    DWORD platform_thread_id_{ nullptr };
+    DWORD platform_thread_id_;
 };
 
 class AudioPlayer {
