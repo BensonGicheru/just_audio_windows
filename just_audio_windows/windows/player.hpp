@@ -161,9 +161,15 @@ private:
                         DQTYPE_THREAD_CURRENT,
                         DQTAT_COM_STA
                 };
-                winrt::Windows::System::DispatcherQueueController controller{ nullptr };
-                winrt::Windows::System::DispatcherQueueController::CreateOnCurrentThread(options, &controller);
-                dispatcher_queue_ = controller.DispatcherQueue();
+                winrt::Windows::System::DispatcherQueueController temp_controller{ nullptr };
+                HRESULT hr = CreateDispatcherQueueController(options, reinterpret_cast<PDISPATCHERQUEUECONTROLLER*>(winrt::put_abi(temp_controller)));
+                if (FAILED(hr)) {
+                    std::wcout << L"[just_audio_windows]: Failed to create DispatcherQueueController. HRESULT: " << std::hex << hr << std::endl;
+                    return false; // Failed to create dispatcher controller
+                } else {
+                    std::wcout << L"[just_audio_windows]: Successfully created DispatcherQueueController" << std::endl;
+                }
+                dispatcher_queue_ = temp_controller.DispatcherQueue();
             }
         }
     }
