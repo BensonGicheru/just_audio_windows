@@ -141,6 +141,7 @@ public:
 //        }
 
         if (sink) {
+            std::wcout << L"Sink not null." << std::endl;
             PostMessageToPlatformThread([self = this, event]() {
                 if (self->sink) {
                     self->sink->Success(event);
@@ -161,6 +162,7 @@ public:
 
     void PostMessageToPlatformThread(std::function<void()> task) {
         PostThreadMessage(platform_thread_id_, WM_USER, reinterpret_cast<WPARAM>(&task), 0);
+        std::wcout << L"PostThreadMessage called" << std::endl;
     }
 
     // Initializes DispatcherQueue for the main thread
